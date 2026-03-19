@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Smaart SPL Server</title>
+
+    <link rel="stylesheet" type="text/css" href="css/style.css" >
+    <link id="themeCss" rel="stylesheet" type="text/css" href="css/light_theme.css">
+
+    <script src='js/smaartSPL.js'></script>
+    <script src='js/smaartSPLconfig.js'></script>
+</head>
+
+<body onload="onBodyLoad ()" onresize="onBodyResize ()">
+
+<table>
+  <tr>
+    <td colspan=2 class='top'>
+      FPS:
+      <select id='meterFramerate' onchange='setFramerate (meterFramerate.value)'>
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option>
+      </select>&nbsp;
+      <input class='themeButton' type=button title="Light Color Scheme"
+        onclick="lightColorScheme ()"
+        style='background-color:white;' value="&#160;">
+      <input class='themeButton' type=button title="Dark Color Scheme"
+        onclick="darkColorScheme ()"
+        style='background-color:black;' value="&#160;">&nbsp;
+      <input class="button" id="create" type="button" title="Create a new meter"
+        value="+ Create Meter" onclick="createMeter (true);" />
+    </td>
+  </tr>
+
+  <tr>
+    <td class='ping'>
+      <img id='logo' src='./img/Smaart.png' alt='Smaart logo' height=64 width=64>
+      <input type=text size=5 id='timeInput' readonly='readonly'>
+      Local Time
+    </td>
+    <td style='width:99%;'><div id="meterArray"></div></td>
+  </tr>
+
+  <tr>
+    <td colspan=2>
+      <div style='float:left;position:relative;width:100%'>
+        <table class='inner'>
+            <tr>
+                <td style='max-width:99%;padding:20px;'>
+                    <canvas id='history'></canvas>
+                </td>
+                <td style='width:200px'>
+                    <table id='canvasOptions' style='width:100%;'>
+                        <tr><td>Input:</td>
+                            <td style='min-width:150px'>
+                                <select id='plotInputs' style='min-width:150px'
+                                    onchange='onPlotInputChange ()'></select>
+                                <input type='hidden' id='lastPlotInput' value='-1'>
+                            </td>
+                        </tr>
+                        <tr>
+                          <td>Display:</td>
+                          <td style='min-width:200px'>
+                              <select id='plotDisplayLast' style='min-width:150px'
+                                    onchange='onPlotTimeWindowChange ()'
+                                    autocomplete='off'>
+                                  <option value='30'>Last 30 minutes</option>
+                                  <option value='10' selected='selected'>Last 10 minutes</option>
+                                  <option value='5'>Last 5 minutes</option>
+                              </select>
+                        </tr>
+                        <tr>
+                          <td><div style='background:#009b05;margin:10px'>&nbsp;</div></td>
+                            <td style='min-width:200px'>
+                                <select id='plotMetric0' style='min-width:150px'
+                                    onchange='onPlotMetricChange ()'></select>
+                            </td>
+                        </tr>
+                        <tr>
+                          <td><div style='background:#3264f5;margin:10px'>&nbsp;</div></td>
+                          <td style='min-width:200px'>
+                              <select id='plotMetric1' style='min-width:150px'
+                                  onchange='onPlotMetricChange ()'></select>
+                          </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <input type=button class='button' title='refresh' id='refreshPlot'
+            value='refresh' onclick='refreshPlot ()'/>
+      </div>
+    </td>
+  </tr>
+      <tr>
+    <td colspan=2>
+      <div style='float:left;position:relative;width:100%'>
+        <table class='inner'>
+            <tr>
+                <td style='max-width:99%;padding:20px;'>
+                    <canvas id='history'></canvas>
+                </td>
+                <td style='width:200px'>
+                    <table id='canvasOptions' style='width:100%;'>
+                        <tr><td>Input:</td>
+                            <td style='min-width:150px'>
+                                <select id='plotInputs' style='min-width:150px'
+                                    onchange='onPlotInputChange ()'></select>
+                                <input type='hidden' id='lastPlotInput' value='-1'>
+                            </td>
+                        </tr>
+                        <tr>
+                          <td>Display:</td>
+                          <td style='min-width:200px'>
+                              <select id='plotDisplayLast' style='min-width:150px'
+                                    onchange='onPlotTimeWindowChange ()'
+                                    autocomplete='off'>
+                                  <option value='30'>Last 30 minutes</option>
+                                  <option value='10' selected='selected'>Last 10 minutes</option>
+                                  <option value='5'>Last 5 minutes</option>
+                              </select>
+                        </tr>
+                        <tr>
+                          <td><div style='background:#009b05;margin:10px'>&nbsp;</div></td>
+                            <td style='min-width:200px'>
+                                <select id='plotMetric0' style='min-width:150px'
+                                    onchange='onPlotMetricChange ()'></select>
+                            </td>
+                        </tr>
+                        <tr>
+                          <td><div style='background:#3264f5;margin:10px'>&nbsp;</div></td>
+                          <td style='min-width:200px'>
+                              <select id='plotMetric1' style='min-width:150px'
+                                  onchange='onPlotMetricChange ()'></select>
+                          </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <input type=button class='button' title='refresh' id='refreshPlot'
+            value='refresh' onclick='refreshPlot ()'/>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<footer>
+  <small>&copy; Copyright 2022, Rational Acoustics LLC, All Rights Reserved</small>
+</footer>
+
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+/*
+Copyright (c) 2019, Rational Acoustics LLC, All Rights Reserved
+Light Theme CSS
+Liz Paglione - July 2019
+
+-> Custom color hex values
+Background: #e3e5ea
+Trim: #bac3ce
+Foreground: #bbc8da
+Plots: #f5f5f5
+Buttons: #d5d9e6, #a4a9b9
+Text: #000000
+
+*/
+
+/* Body and Table Styles */
+
+body {
+  background-color: #e3e5ea;
+  color: #000000;
+}
+
+table.inner {
+  border: solid 2px #bac3ce;
+  background-color: #bbc8da;
+}
+
+#meterArray table {
+  border: solid 2px #bac3ce;
+  background-color: #bbc8da;
+}
+
+canvas {
+  background-color: #f5f5f5;
+  color: #bac3ce;
+}
+
+/* Buttons, Links, Input Styles */
+
+input, select {
+  background-color: #f5f5f5;
+  color: #000000;
+  border: 1px solid #9397a7;
+}
+
+#timeInput {
+  background-color: #e3e5ea;
+}
+
+.button {
+  background-color: #c2c7db;
+  background-image: linear-gradient(to bottom, #d5d9e6, #a4a9b9);
+  color: #000000;
+  border: 1px solid #9397a7;
+}
+
+.button:hover {
+  background-color: #ffffff;
+  background-image: linear-gradient(#ffffff, #d5d9e6);
+  color: #000000;
+}
+

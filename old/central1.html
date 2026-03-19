@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Smaart SPL Server</title>
+
+    <link rel="stylesheet" type="text/css" href="css/style.css" >
+    <link id="themeCss" rel="stylesheet" type="text/css" href="css/dark_theme.css">
+
+    <script src='js/smaartSPL.js'></script>
+    <script src='js/smaartSPLconfig.js'></script>
+</head>
+
+<body onload="onBodyLoad ()" onresize="onBodyResize ()">
+
+<table width="100%">     
+      <tr>
+        <td class="mccc"><img id='logo' src='./img/ManCentrallogo.png' alt='Manc Central logo' height=94 width=94></td><td class="mcccl">Manchester Central</td>    
+      <td class="top">FPS:
+      <select id='meterFramerate' onchange='setFramerate (meterFramerate.value)'>
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option>
+      </select>&nbsp;
+      <input class='themeButton' type=button title="Light Color Scheme"
+        onclick="lightColorScheme ()"
+        style='background-color:white;' value="&#160;">
+      <input class='themeButton' type=button title="Dark Color Scheme"
+        onclick="darkColorScheme ()"
+        style='background-color:black;' value="&#160;">
+    </td>
+    </tr>
+    </table>
+    <table width="100%">
+  <tr>
+       <td class='ping'>
+      <input type=text size=5 id='timeInput' readonly='readonly'>
+      Local Time
+      </td>
+      <td class='top'><a href="index.html"><input type=button class='button' value='Menu'></a></td>
+        </tr>
+        <tr>
+    <td colspan="2" style='width:100%;'><div id="meterArray"></div></td>
+    </tr>
+        <table colspan="2" topborder="40"><br>
+    <td>
+        <table id='canvasOptions' style='width:100%;'>
+            <tr><td>Input:</td>
+                <td style='min-width:200px'>
+                <select id='plotInputs' style='min-width:200px'
+                   onchange='onPlotInputChange ()'></select>
+                 <input type='hidden' id='lastPlotInput' value='-1'>
+                    </td>
+                        </tr>
+                        <tr>
+                          <td>Display:</td>
+                          <td style='min-width:200px'>
+                              <select id='plotDisplayLast' style='min-width:200px'
+                                    onchange='onPlotTimeWindowChange ()'
+                                    autocomplete='off'>
+                                  <option value='30'>Last 30 minutes</option>
+                                  <option value='10' selected='selected'>Last 10 minutes</option>
+                                  <option value='5'>Last 5 minutes</option>
+                              </select>
+                        </tr>
+                </table>
+            </td>
+<td>
+    <table id='canvasOptions' style='width:100%;'>
+        <tr>
+            <td style='min-width:40px'><div style='background:#009b05;margin:0px'>&nbsp;</div></td>
+                <td style='min-width:200px'>
+                    <select id='plotMetric0' style='min-width:200px'onchange='onPlotMetricChange ()'></select>
+                </td>
+            </tr>
+        <tr>
+<td style='min-width:40px'><div style='background:#3264f5;margin:0px'>&nbsp;</div></td>
+    <td style='min-width:200px'>
+        <select id='plotMetric1' style='min-width:200px'onchange='onPlotMetricChange ()'></select>
+    </td> 
+        </tr>
+    </table>
+</td>
+    </table>
+  <tr>
+    <td>
+      <div style='float:left;position:relative;width:100%'>
+        <table class='inner'>
+            <tr>
+                <td style='max-width:99%;padding:20px;'>
+                    <canvas id='history'></canvas>
+                </td></tr>
+            <tr>       
+        <input type=button class='button' title='refresh' id='refreshPlot'
+            value='refresh' onclick='refreshPlot ()'/>
+            </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+
+
+<footer>
+  <small>&copy; Copyright 2026, Rational Acoustics LLC, All Rights Reserved - System Designed and Installed by Sterling Event Group Ltd</small>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const observer = new MutationObserver(function(mutationsList, observer) {
+          for (let mutation of mutationsList) {
+              if (mutation.type === 'childList') {
+                  for (let i = 0; i <= 3; i++) {
+                      const valueElement = document.getElementById('value' + i);
+                      if (valueElement) {
+                          console.log(`Element with id 'value${i}' added to the DOM.`);
+                          observer.disconnect();
+                          startColorChangeLogic(valueElement, i);
+                      }
+                  }
+              }
+          }
+      });
+
+      observer.observe(document.body, {
+          childList: true,
+          subtree: true
+      });
+
+      function startColorChangeLogic(valueElement, index) {
+
+          function checkAndRetry() {
+              const rawValue = valueElement.innerText;
+              console.log(`Raw value inside <td> with id 'value${index}':`, rawValue);
+
+              const trimmedValue = rawValue.trim();
+              console.log("Trimmed value:", trimmedValue);
+
+              const value = parseInt(trimmedValue);
+              console.log("Parsed value:", value);
+
+              if (isNaN(value)) {
+                  console.error("Value inside <td> is not a valid number.");
+                  setTimeout(checkAndRetry, 100);
+              } else {
+
+                  applyColorChange(valueElement, index);
+              }
+          }
+
+          checkAndRetry();
+      }
+      
+      function applyColorChange(valueElement, index) {
+
+          function updateTextColor() {
+              const rawValue = valueElement.innerText.trim();
+              const value = parseInt(rawValue);
+
+              if (isNaN(value)) {
+                  console.error("Parsed value is not a valid number:", value);
+                  return;
+              }
+
+
+              if (value > 96) {
+                  valueElement.style.color = 'red';
+                  valueElement.style.fontWeight = 'normal';
+              } else if (value > 92) {
+                  valueElement.style.color = 'yellow';
+                  valueElement.style.fontWeight = 'normal';
+              } else {
+                  valueElement.style.color = 'green';
+                  valueElement.style.fontWeight = 'normal';
+              }
+          }
+
+          setInterval(updateTextColor, 500);
+      }
+  });
+</script>
+
+</body>
+
+</html>
