@@ -51,26 +51,45 @@ function broadcastToFrontend(data) {
 connectToBridge();
 
 // Nuxt plugin export
-export default defineNitroPlugin(() => {
-  // Create a WS server for frontend clients
-  wssFrontend = new WebSocketServer({ port: 8090 }); // choose any port
+// export default defineNitroPlugin(() => {
+//   // Create a WS server for frontend clients
+//   wssFrontend = new WebSocketServer({ port: 8090 }); // choose any port
 
-  wssFrontend.on("connection", (client) => {
-    console.log("Frontend client connected");
+//   wssFrontend.on("connection", (client) => {
+//     console.log("Frontend client connected");
 
-    // Optionally send the latest data immediately on connect
-    if (wsData.length > 0 && client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(wsData));
-    }
+//     // Optionally send the latest data immediately on connect
+//     if (wsData.length > 0 && client.readyState === WebSocket.OPEN) {
+//       client.send(JSON.stringify(wsData));
+//     }
 
-    client.on("close", () => {
-      console.log("Frontend client disconnected");
-    });
+//     client.on("close", () => {
+//       console.log("Frontend client disconnected");
+//     });
 
-    client.on("error", (err) => {
-      console.error("Frontend WS error:", err.message);
+//     client.on("error", (err) => {
+//       console.error("Frontend WS error:", err.message);
+//     });
+//   });
+
+//   console.log("Frontend WebSocket server running on port 8090");
+// });
+
+export default defineNitroPlugin((nitroApp) => {
+  const wss = new WebSocketServer({ noServer: true });
+
+  nitroApp.hooks.hook("listen", ({ server }) => {
+    server.on("upgrade", (req, socket, head) => {
+      if (req.url === "/ws") {
+        wss.handleUpgrade(req, socket, head, (ws) => {
+          wss.emit("connection", ws, req);
+        });
+      }
     });
   });
 
-  console.log("Frontend WebSocket server running on port 8090");
+  wss.on("connection", (client) => {
+    console.log("Frontend WS connected");
+    client.send(JSON.stringify({ message: "Hello from Nuxt backend!" }));
+  });
 });
