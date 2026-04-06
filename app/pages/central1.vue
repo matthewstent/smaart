@@ -3,38 +3,36 @@
     class="min-h-screen p-[8px] font-sans relative transition-colors duration-500"
     :class="isDark ? 'bg-[#1a1a1e] text-white' : 'bg-[#e3e5ea] text-black'"
   >
-    <!-- Header Table -->
-    <table width="100%">
-      <tr>
-        <td class="mccc">
-          <img :src="logoSrc" alt="Manc Central logo" height="94" width="94" />
-        </td>
-        <td class="mcccl font-[Verdana]">Manchester Central</td>
-        <td class="top">
-          FPS:
-          <select v-model="fps" class="border rounded p-1 dark:text-black">
-            <option v-for="n in 8" :key="n">{{ n }}</option>
-          </select>
-          &nbsp;
-          <input
-            type="button"
-            class="themeButton"
-            title="Light Color Scheme"
-            value="&#160;"
-            @click="setLightMode"
-            style="background-color: white"
-          />
-          <input
-            type="button"
-            class="themeButton"
-            title="Dark Color Scheme"
-            value="&#160;"
-            @click="setDarkMode"
-            style="background-color: black"
-          />
-        </td>
-      </tr>
-    </table>
+    <div class="w-full h-24 flex items-center justify-between">
+      <div class="flex items-center">
+        <img :src="logoSrc" alt="Manc Central logo" class="" />
+        <div class="mcccl font-[Verdana] ml-2">Manchester Central</div>
+      </div>
+      <div class="w-1/4 items-center flex justify-end">
+        <span class="mr-2">FPS:</span>
+        <select v-model="fps" class="border rounded p-1 dark:text-black">
+          <option v-for="n in 8" :key="n">{{ n }}</option>
+        </select>
+
+        <input
+          type="button"
+          class="themeButton"
+          title="Light Color Scheme"
+          value="&#160;"
+          @click="setLightMode"
+          style="background-color: white"
+        />
+        <input
+          type="button"
+          class="themeButton"
+          title="Dark Color Scheme"
+          value="&#160;"
+          @click="setDarkMode"
+          style="background-color: black"
+        />
+      </div>
+    </div>
+    <div class="w-full flex justify-between items-center"></div>
 
     <!-- Time & Menu -->
     <table width="100%" class="mt-2">
