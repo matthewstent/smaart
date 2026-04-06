@@ -185,7 +185,7 @@ export default {
   },
   mounted() {
     // Frontend example (Options API or Vue 3)
-    const ws = new WebSocket("ws://144.126.199.128:8080");
+    const ws = new WebSocket("wss://smaart.msct.dev/ws/");
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
