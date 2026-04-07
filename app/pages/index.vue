@@ -65,11 +65,11 @@ export default {
     return {
       logoSrc: "/img/ManCentrallogo.png",
       centrals: [
-        { name: "Central 1", link: "/central1" },
-        { name: "Central 2", link: "/central2" },
-        { name: "Central 3", link: "/central3" },
-        { name: "Central 4", link: "/central4" },
-        { name: "Exchange Hall", link: "/exchange" },
+        { name: "Central 1", link: "/views/central1" },
+        { name: "Central 2", link: "/views/central2" },
+        { name: "Central 3", link: "/views/central3" },
+        { name: "Central 4", link: "/views/central4" },
+        { name: "Exchange Hall", link: "/views/exchange" },
       ],
     };
   },
