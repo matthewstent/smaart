@@ -146,10 +146,6 @@
         </div>
       </div>
 
-      <div
-        class="w-full h-[40vh] bg-[url('/img/bg.png')] object-cover bg-no-repeat bg-black"
-      ></div>
-
       <!-- <td>
             <input
               type="button"
@@ -210,11 +206,11 @@ export default {
       max_mins: 30,
 
       rooms: {
-        central1: "CEN1",
-        central2: "CEN2",
-        central3: "CEN3",
-        central4: "CEN4",
-        exchange: "EXC1",
+        central1: { slug: "CEN1", index: 0 },
+        central2: { slug: "CEN2", index: 1 },
+        central3: { slug: "CEN3", index: 2 },
+        central4: { slug: "CEN4", index: 3 },
+        exchange: { slug: "EXC1", index: 4 },
       },
       currentRoom: "",
       currentMetrics: [],
@@ -238,7 +234,9 @@ export default {
     return { isDark, setLightMode, setDarkMode };
   },
   mounted() {
-    this.currentRoom = this.rooms[this.$route.params.room];
+    this.currentRoom = this.rooms[this.$route.params.room].slug;
+    this.currentRoomIndex = this.rooms[this.$route.params.room].index;
+
     const ws = new WebSocket("wss://smaart.msct.dev/ws/");
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
@@ -252,7 +250,9 @@ export default {
           });
         }
         if (this.filteredStream.length) {
-          this.metricKeys = this.extractMetricKeys(this.filteredStream[0]);
+          this.metricKeys = this.extractMetricKeys(
+            this.filteredStream[this.currentRoomIndex],
+          );
         }
         this.initChart();
 
@@ -267,7 +267,7 @@ export default {
       } else if (msg.type === "snapshot_chunk") {
         msg.data.forEach((el, i) => {
           const m = JSON.parse(el);
-          this.filteredStream.push(m[0]);
+          this.filteredStream.push(m[this.currentRoomIndex]);
         });
         // } else if (msg.type === "live" && this.recvLive == true) {
         //   const m = JSON.parse(msg.data);
@@ -275,7 +275,7 @@ export default {
         //   // console.log(this.filteredStream);
         // }
       } else if (msg.type === "live" && this.recvLive) {
-        const entry = JSON.parse(msg.data)[0];
+        const entry = JSON.parse(msg.data)[this.currentRoomIndex];
         this.filteredStream.push(entry);
 
         // Add point to chart and scroll
