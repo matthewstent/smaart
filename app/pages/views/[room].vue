@@ -93,6 +93,7 @@
                   @change="onPlotTimeWindowChange"
                   autocomplete="off"
                   class="dark:text-black"
+                  v-model="max_mins"
                 >
                   <option value="30">Last 30 minutes</option>
                   <option value="10" selected>Last 10 minutes</option>
@@ -137,7 +138,14 @@
     <!-- Canvas Display -->
     <div style="float: left; position: relative; width: 100%" class="mt-2">
       <!-- <canvas id="history"></canvas> -->
-      <canvas id="metricsChart" width="800" height="400"></canvas>
+      <!-- <canvas id="metricsChart" width="800" height="400"></canvas> -->
+      <div>
+        <div style="height: 400px">
+          000
+          <canvas ref="chartCanvas"></canvas>
+        </div>
+      </div>
+
       <div
         class="w-full h-[40vh] bg-[url('/img/bg.png')] object-cover bg-no-repeat bg-black"
       ></div>
@@ -169,30 +177,38 @@ import {
   LineElement,
   PointElement,
   LinearScale,
-  Title,
+  TimeScale,
   CategoryScale,
+  Legend,
+  Tooltip,
 } from "chart.js";
+import "chartjs-adapter-date-fns";
+
 Chart.register(
   LineController,
   LineElement,
   PointElement,
   LinearScale,
-  Title,
+  TimeScale,
   CategoryScale,
+  Legend,
+  Tooltip,
 );
 
 export default {
   name: "SmaartSPLPage",
   data() {
+    this.chart = null;
     return {
       logoSrc: "/img/ManCentrallogo.png",
       fps: 1,
       localTime: "",
       timer: null,
       messageArray: [],
+      filteredStream: [],
       msg_per_sec: 8,
       max_mins: 30,
-      graphInterval: null,
+
       rooms: {
         central1: "CEN1",
         central2: "CEN2",
@@ -202,9 +218,11 @@ export default {
       },
       currentRoom: "",
       currentMetrics: [],
-      graphObject: { labels: [], values: [] },
-      chartInstance: null,
+      showGraph: false,
+      intervalId: null,
       recvLive: false,
+
+      metricKeys: [],
     };
   },
   setup() {
@@ -220,52 +238,63 @@ export default {
     return { isDark, setLightMode, setDarkMode };
   },
   mounted() {
-    // Frontend example (Options API or Vue 3)
     this.currentRoom = this.rooms[this.$route.params.room];
-
     const ws = new WebSocket("wss://smaart.msct.dev/ws/");
-
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-
-      //   console.log("Live data from backend:", data.type);
-      console.log(msg.type);
       if (msg.type == "snapshot_end") {
-        console.log(this.messageArray);
-        this.initGraph();
-        setTimeout(() => {
-          this.recvLive = true;
-        }, 5000);
+        this.showGraph = true;
+        this.recvLive = true;
+
+        if (this.filteredStream.length) {
+          this.filteredStream.forEach((el) => {
+            // rawArray.push(el);
+          });
+        }
+        if (this.filteredStream.length) {
+          this.metricKeys = this.extractMetricKeys(this.filteredStream[0]);
+        }
+        this.initChart();
+
+        this.intervalId = setInterval(() => {
+          // console.log("winterval");
+          // this.initChart();
+
+          this.chart.datasets = this.buildDatasets(this.filteredStream);
+          console.log("yodate");
+          this.chart.update("none");
+        }, 1000 / 8);
       } else if (msg.type === "snapshot_chunk") {
-        // Add chunk to data
-        console.log(msg.data);
         msg.data.forEach((el, i) => {
-          this.messageArray.push(JSON.parse(el));
-          //   this.updateGraphing(JSON.parse(el));
+          const m = JSON.parse(el);
+          this.filteredStream.push(m[0]);
         });
-        // this.messageArray.push(...JSON.parse(msg.data));
-        // console.log(this.messageArray[0]);
-        // console.log("ok");
+        // } else if (msg.type === "live" && this.recvLive == true) {
+        //   const m = JSON.parse(msg.data);
+        //   this.filteredStream.push(m[0]);
+        //   // console.log(this.filteredStream);
+        // }
+      } else if (msg.type === "live" && this.recvLive) {
+        const entry = JSON.parse(msg.data)[0];
+        this.filteredStream.push(entry);
+
+        // Add point to chart and scroll
+        if (this.chart) this.addPoint(entry);
       }
-      if (msg.type === "live" && this.recvLive == true) {
-        // Add new live message
-        // this.messageArray.push(JSON.parse(msg.data));
-        // console.log(JSON.parse(msg.data));
-        this.updateGraphing(JSON.parse(msg.data));
-      }
+
       const MAX_MESSAGES = this.msg_per_sec * this.max_mins * 60;
-      if (this.messageArray.length > MAX_MESSAGES) {
+      if (this.filteredStream.length > MAX_MESSAGES) {
         // Keep only the last MAX_MESSAGES
-        this.messageArray = this.messageArray.slice(
-          this.messageArray.length - MAX_MESSAGES,
+        this.filteredStream = this.filteredStream.slice(
+          this.filteredStream.length - MAX_MESSAGES,
         );
       }
     };
+    this.filteredStream = [];
 
-    setTimeout(() => {
-      this.messageArray = [];
+    ws.onopen = (event) => {
       ws.send(JSON.stringify({ request: 30 }));
-    }, 1500);
+    };
 
     this.localTime = new Date().toLocaleTimeString("en-GB", {
       hour: "2-digit",
@@ -277,16 +306,10 @@ export default {
         minute: "2-digit",
       });
     }, 1000);
-
     if (typeof onBodyLoad === "function") onBodyLoad();
     window.addEventListener("resize", () => {
       if (typeof onBodyResize === "function") onBodyResize();
     });
-
-    setInterval(() => {
-      //   console.log(this.messageArray.length);
-      //   console.log(this.messageArray[0]);
-    }, 1000);
   },
 
   beforeUnmount() {
@@ -295,132 +318,26 @@ export default {
   },
 
   methods: {
-    setupGraphing: function () {
-      const { labels, values } = this.graphObject; // your object
+    addPoint(entry) {
+      if (!this.chart) return;
 
-      // Prepare datasets
-      const datasets = labels.map((metricName, metricIndex) => {
-        return {
-          label: metricName,
-          data: values.map((point) => point.data[metricIndex]), // pick value for this metric
-          borderColor: `hsl(${(metricIndex * 60) % 360}, 70%, 50%)`,
-          backgroundColor: `hsla(${(metricIndex * 60) % 360}, 70%, 50%, 0.2)`,
-          tension: 0,
-          borderWidth: 0.5,
-          pointRadius: 0,
-        };
-      });
-
-      // X-axis labels = timestamps
-      const xLabels = values.map((point) =>
-        new Date(point.timestamp).toLocaleTimeString(),
-      );
-
-      const ctx = document.getElementById("metricsChart").getContext("2d");
-
-      this.chartInstance = new Chart(ctx, {
-        type: "line",
-
-        data: {
-          labels: xLabels, // timestamps
-          datasets: datasets,
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: "Room Metrics Over Time" },
-            legend: { display: true },
-          },
-          scales: {
-            y: { beginAtZero: false },
-            x: { title: { display: true, text: "Time" } },
-          },
-        },
-      });
-
-      console.log("i", this.chartInstance.data);
-    },
-    initGraph: function () {
-      this.messageArray.forEach((el, i) => {
-        el.forEach((lel, li) => {
-          if (lel.channelName == this.currentRoom) {
-            const metricsArray = lel.metrics;
-            const labels = metricsArray.map((m) => Object.keys(m)[0]);
-            const values = {
-              timestamp: lel.timestamp,
-              data: metricsArray.map((m) => Object.values(m)[0]),
-            };
-
-            if (!this.graphObject.labels.length) {
-              this.graphObject.labels = labels; // set only once
-            }
-            this.graphObject.values.push(values);
-          }
-        });
-      });
-
-      this.graphObject.values.sort((a, b) => a.timestamp - b.timestamp);
-      console.log(this.graphObject.values);
-      this.setupGraphing();
-    },
-    updateGraphing: function (d) {
-      d.forEach((el, i) => {
-        if (el.channelName == this.currentRoom) {
-          const metricsArray = el.metrics;
-          const labels = metricsArray.map((m) => Object.keys(m)[0]);
-          const values = {
-            timestamp: el.timestamp,
-            data: metricsArray.map((m) => Object.values(m)[0]),
-          };
-          if (!this.graphObject.labels.length) {
-            this.graphObject.labels = labels; // set only once
-          }
-          this.graphObject.values.push(values);
-          const point = values; // the new one
-          const timestamp = new Date(point.timestamp).toLocaleTimeString();
-          this.chartInstance.data.labels.push(timestamp);
-          //   this.chartInstance.data.datasets.forEach((ds, i) => {
-          //     ds.data.push(point.data[i]);
-          //   });
-
-          this.chartInstance.data.datasets.forEach((ds, i) => {
-            if (values[i] !== undefined) {
-              ds.data.push(values[i]);
-            } else {
-              console.warn(
-                `Skipping dataset ${ds.label} — no value for this metric`,
-              );
-            }
+      this.chart.data.datasets.forEach((dataset, i) => {
+        const key = this.metricKeys[i];
+        const metricObj = entry.metrics.find((m) => m[key] !== undefined);
+        if (metricObj) {
+          dataset.data.push({
+            x: new Date(entry.timestamp),
+            y: metricObj[key],
           });
         }
+
+        // Keep only last `max_mins` minutes
+        const cutoff = Date.now() - this.max_mins * 60 * 1000;
+        dataset.data = dataset.data.filter((d) => d.x.getTime() >= cutoff);
       });
 
-      console.log("g", this.chartInstance.data);
-
-      //   this.graphObject.values.forEach((point) => {
-      //     const timestamp = new Date(point.timestamp).toLocaleTimeString();
-      //     this.chartInstance.data.labels.push(timestamp);
-
-      //     this.chartInstance.data.datasets.forEach((ds, i) => {
-      //       ds.data.push(point.data[i]);
-      //     });
-      //   });
-
-      // Trim old points if exceeding 30 min
-      //   const MAX_POINTS = 8 * 60 * 30; // 8 messages/sec × 30 min
-      //   if (this.chartInstance.data.labels.length > MAX_POINTS) {
-      //     this.chartInstance.data.labels.splice(
-      //       0,
-      //       this.chartInstance.data.labels.length - MAX_POINTS,
-      //     );
-      //     this.chartInstance.data.datasets.forEach((ds) => {
-      //       ds.data.splice(0, ds.data.length - MAX_POINTS);
-      //     });
-      //   }
-
-      this.chartInstance.update("none"); // fast update without animation
+      this.chart.update("none"); // no animation
     },
-
     resolveRoom: function (r) {
       if (r == "central1") {
         return "Central 1";
@@ -447,6 +364,85 @@ export default {
     },
     refreshPlot() {
       console.log("Refreshing plot...");
+    },
+    extractMetricKeys(entry) {
+      console.log(entry);
+      return entry.metrics.map((obj) => Object.keys(obj)[0]);
+    },
+
+    buildDatasets(data) {
+      const colors = [
+        "#FF5733",
+        "#33FF57",
+        "#3357FF",
+        "#F3FF33",
+        "#FF33F0",
+        "#33FFF3",
+        "#FF8F33",
+      ];
+
+      // console.log("building data");
+
+      return this.metricKeys.map((key, index) => {
+        const color = colors[index % colors.length]; // rotate colors if more keys than colors
+
+        return {
+          label: key,
+          data: data.map((entry) => {
+            const metricObj = entry.metrics.find((m) => m[key] !== undefined);
+            return {
+              x: new Date(entry.timestamp),
+              y: metricObj ? metricObj[key] : null,
+            };
+          }),
+          borderWidth: 1,
+          tension: 0.2,
+          pointRadius: 0,
+          backgroundColor: color,
+          borderColor: color, // <-- force visible color
+        };
+      });
+    },
+
+    initChart() {
+      const ctx = this.$refs.chartCanvas.getContext("2d");
+
+      this.chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          datasets: this.buildDatasets(this.filteredStream),
+        },
+        options: {
+          animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
+
+          scales: {
+            x: {
+              type: "time",
+
+              time: {
+                tooltipFormat: "HH:mm:ss",
+              },
+            },
+            y: {
+              beginAtZero: false,
+            },
+          },
+          plugins: {
+            legend: {
+              display: true,
+            },
+          },
+        },
+      });
+    },
+
+    updateChart(data) {
+      if (!this.chart) return;
+      console.log("update...");
+      this.chart.data.datasets = this.buildDatasets(data);
+      this.chart.update("none"); // no animation for real-time feel
     },
   },
 };
