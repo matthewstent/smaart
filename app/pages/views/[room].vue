@@ -57,37 +57,53 @@
         </div>
       </div>
       <div
-        class="w-full flex items-center justify-between px-[10vw] mt-4 text-center"
+        class="w-full grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-center"
       >
         <div
-          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+          class="w-full h-24 border border-black dark:border-white rounded-lg"
         >
           <div class="w-full">LAeq 1</div>
-          <div v-if="recvLive" class="text-[3vw]">
+          <div
+            v-if="recvLive"
+            class="text-5xl"
+            :style="`color:${resolveColour(currentValues['LAeq 1'])}`"
+          >
             {{ currentValues["LAeq 1"] }}
           </div>
         </div>
         <div
-          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+          class="w-full h-24 border border-black dark:border-white rounded-lg"
         >
           <div class="w-full">LAeq 10</div>
-          <div v-if="recvLive" class="text-[3vw]">
+          <div
+            v-if="recvLive"
+            class="text-5xl"
+            :style="`color:${resolveColour(currentValues['LAeq 10'])}`"
+          >
             {{ currentValues["LAeq 10"] }}
           </div>
         </div>
         <div
-          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+          class="w-full h-24 border border-black dark:border-white rounded-lg"
         >
           <div class="w-full">Leq 1 63 Hz</div>
-          <div v-if="recvLive" class="text-[3vw]">
+          <div
+            v-if="recvLive"
+            class="text-5xl"
+            :style="`color:${resolveColour(currentValues['Leq 1 63 Hz'])}`"
+          >
             {{ currentValues["Leq 1 63 Hz"] }}
           </div>
         </div>
         <div
-          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+          class="w-full h-24 border boLeq 1 125 Hzrder-black dark:border-white rounded-lg"
         >
           <div class="w-full">Leq 1 125 Hz</div>
-          <div v-if="recvLive" class="text-[3vw]">
+          <div
+            v-if="recvLive"
+            class="text-5xl"
+            :style="`color:${resolveColour(currentValues['Leq 1 125 Hz'])}`"
+          >
             {{ currentValues["Leq 1 125 Hz"] }}
           </div>
         </div>
@@ -97,7 +113,7 @@
     <!-- Canvas Display -->
     <div v-show="recvLive" class="mt-2">
       <div>
-        <div class="h-[400px]">
+        <div class="h-[400px] border border-black dark:border-white rounded-lg">
           <canvas ref="chartCanvas"></canvas>
         </div>
       </div>
@@ -184,8 +200,11 @@ export default {
       recvLive: false,
 
       metricKeys: [],
-      selectedMetrics: ["LAeq 1", "Leq 1 63 Hz"],
+      selectedMetrics: ["Leq 1 125 Hz", "Leq 1 63 Hz"],
+
+      latestValues: {},
       currentValues: {},
+      latestEntry: null,
     };
   },
   setup() {
@@ -199,6 +218,11 @@ export default {
     };
 
     return { isDark, setLightMode, setDarkMode };
+  },
+  watch: {
+    fps() {
+      this.startRenderLoop();
+    },
   },
   mounted() {
     this.currentRoom = this.rooms[this.$route.params.room].slug;
@@ -225,14 +249,15 @@ export default {
         }
         this.initChart();
 
-        this.intervalId = setInterval(() => {
-          // console.log("winterval");
-          // this.initChart();
+        // this.intervalId = setInterval(() => {
+        //   // console.log("winterval");
+        //   // this.initChart();
 
-          this.chart.datasets = this.buildDatasets(this.filteredStream);
+        //   this.chart.datasets = this.buildDatasets(this.filteredStream);
 
-          this.chart.update("none");
-        }, 1000 / 8);
+        //   this.chart.update("none");
+        // }, 1000 / 8);
+        this.startRenderLoop();
       } else if (msg.type === "snapshot_chunk") {
         msg.data.forEach((el, i) => {
           const m = JSON.parse(el);
@@ -248,14 +273,17 @@ export default {
         this.filteredStream.push(entry);
 
         // Add point to chart and scroll
-        if (this.chart) this.addPoint(entry);
+
+        this.latestEntry = entry;
+
         const values = {};
         entry.metrics.forEach((m) => {
           const key = Object.keys(m)[0];
           values[key] = m[key];
         });
 
-        this.currentValues = values;
+        // this.currentValues = values;
+        this.latestValues = values;
       }
 
       const MAX_MESSAGES = this.msg_per_sec * this.max_mins * 60;
@@ -294,6 +322,26 @@ export default {
   },
 
   methods: {
+    startRenderLoop() {
+      if (this.intervalId) clearInterval(this.intervalId);
+
+      this.intervalId = setInterval(() => {
+        if (this.latestEntry && this.chart) {
+          this.addPoint(this.latestEntry);
+          this.latestEntry = null; // consume it
+        }
+        if (this.latestValues) {
+          this.currentValues = this.latestValues;
+        }
+      }, 1000 / this.fps);
+    },
+    resolveColour: function (f) {
+      if (f < 60) {
+        return "#0f0";
+      } else {
+        return "#f00";
+      }
+    },
     addPoint(entry) {
       if (!this.chart) return;
 
@@ -352,15 +400,7 @@ export default {
     },
 
     buildDatasets(data) {
-      const colors = [
-        "#FF5733",
-        "#33FF57",
-        "#3357FF",
-        "#F3FF33",
-        "#FF33F0",
-        "#33FFF3",
-        "#FF8F33",
-      ];
+      const colors = ["#3357FF", "#F3FF33", "#FF33F0", "#33FFF3", "#FF8F33"];
 
       // console.log("building data");
 
