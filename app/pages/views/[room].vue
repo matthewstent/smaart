@@ -430,7 +430,7 @@ export default {
     },
 
     buildDatasets(data) {
-      const colors = ["#3357FF", "#F3FF33", "#FF33F0", "#33FFF3", "#FF8F33"];
+      const colors = ["#3357FF", "#a533ff"];
 
       // console.log("building data");
 
