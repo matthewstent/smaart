@@ -59,32 +59,51 @@
       <div
         class="w-full flex items-center justify-between px-[10vw] mt-4 text-center"
       >
-        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+        <div
+          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+        >
           <div class="w-full">LAeq 1</div>
-          <div class="text-[3vw]">{{ currentValues["LAeq 1"] }}</div>
+          <div v-if="recvLive" class="text-[3vw]">
+            {{ currentValues["LAeq 1"] }}
+          </div>
         </div>
-        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+        <div
+          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+        >
           <div class="w-full">LAeq 10</div>
-          <div class="text-[3vw]">{{ currentValues["LAeq 10"] }}</div>
+          <div v-if="recvLive" class="text-[3vw]">
+            {{ currentValues["LAeq 10"] }}
+          </div>
         </div>
-        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+        <div
+          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+        >
           <div class="w-full">Leq 1 63 Hz</div>
-          <div class="text-[3vw]">{{ currentValues["Leq 1 63 Hz"] }}</div>
+          <div v-if="recvLive" class="text-[3vw]">
+            {{ currentValues["Leq 1 63 Hz"] }}
+          </div>
         </div>
-        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+        <div
+          class="w-1/4 mx-4 h-24 border border-black dark:border-white rounded-lg"
+        >
           <div class="w-full">Leq 1 125 Hz</div>
-          <div class="text-[3vw]">{{ currentValues["Leq 1 125 Hz"] }}</div>
+          <div v-if="recvLive" class="text-[3vw]">
+            {{ currentValues["Leq 1 125 Hz"] }}
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Canvas Display -->
-    <div class="mt-2">
+    <div v-show="recvLive" class="mt-2">
       <div>
-        <div style="height: 400px">
+        <div class="h-[400px]">
           <canvas ref="chartCanvas"></canvas>
         </div>
       </div>
+    </div>
+    <div v-if="!recvLive" class="h-[400px] flex items-center justify-center">
+      Loading Data
     </div>
 
     <div class="ml-2 my-2 flex items-center">
@@ -188,7 +207,7 @@ export default {
     const ws = new WebSocket("wss://smaart.msct.dev/ws/");
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-
+      console.log(msg);
       if (msg.type == "snapshot_end") {
         this.showGraph = true;
         this.recvLive = true;
