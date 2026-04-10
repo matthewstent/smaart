@@ -137,24 +137,12 @@
 
     <!-- Canvas Display -->
     <div style="float: left; position: relative; width: 100%" class="mt-2">
-      <!-- <canvas id="history"></canvas> -->
-      <!-- <canvas id="metricsChart" width="800" height="400"></canvas> -->
       <div>
         <div style="height: 400px">
           000
           <canvas ref="chartCanvas"></canvas>
         </div>
       </div>
-
-      <!-- <td>
-            <input
-              type="button"
-              class="button"
-              id="refreshPlot"
-              value="refresh"
-              @click="refreshPlot"
-            />
-          </td> -->
     </div>
 
     <footer class="mt-[42vh] text-center text-xs">
