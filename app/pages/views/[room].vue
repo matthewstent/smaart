@@ -312,6 +312,11 @@ export default {
         dataset.data = dataset.data.filter((d) => d.x.getTime() >= cutoff);
       });
 
+      const now = Date.now();
+
+      this.chart.options.scales.x.min = now - this.max_mins * 60 * 1000;
+      this.chart.options.scales.x.max = now;
+
       this.chart.update("none"); // no animation
     },
     resolveRoom: function (r) {
@@ -400,6 +405,8 @@ export default {
               time: {
                 tooltipFormat: "HH:mm:ss",
               },
+              min: Date.now() - this.max_mins * 60 * 1000,
+              max: Date.now(),
             },
             y: {
               beginAtZero: false,
