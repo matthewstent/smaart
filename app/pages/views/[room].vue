@@ -3,36 +3,44 @@
     class="min-h-screen p-[8px] font-sans relative transition-colors duration-500"
     :class="isDark ? 'bg-[#1a1a1e] text-white' : 'bg-[#e3e5ea] text-black'"
   >
-    <div class="w-full h-24 flex items-center justify-between">
-      <div class="flex items-center">
-        <img :src="logoSrc" alt="Manc Central logo" class="" />
-        <div class="mcccl font-[Verdana] ml-2">
+    <div
+      class="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-2"
+    >
+      <!-- LEFT: logo + title (keep together) -->
+      <div class="flex items-center gap-2 min-w-0">
+        <img
+          :src="logoSrc"
+          alt="Manc Central logo"
+          class="h-10 w-auto shrink-0"
+        />
+
+        <div
+          class="mcccl font-[Verdana] text-base sm:text-xl md:text-2xl lg:text-3xl leading-[5vh]"
+        >
           Manchester Central - {{ resolveRoom($route.params.room) }}
         </div>
       </div>
-      <div class="w-1/4 items-center flex justify-end">
-        <span class="mr-2">FPS:</span>
+
+      <!-- RIGHT: controls -->
+      <div class="flex items-center justify-end gap-2 shrink-0">
+        <span class="hidden sm:inline mr-2">FPS:</span>
+
         <select v-model="fps" class="border rounded p-1 dark:text-black">
           <option v-for="n in 8" :key="n">{{ n }}</option>
         </select>
 
-        <input
-          type="button"
-          class="themeButton"
-          title="Light Color Scheme"
-          value="&#160;"
-          @click="setLightMode"
-          style="background-color: white"
-        />
-        <input
-          type="button"
-          class="themeButton"
-          title="Dark Color Scheme"
-          value="&#160;"
-          @click="setDarkMode"
-          style="background-color: black"
-        />
+        <button
+          @click="toggleDarkMode"
+          class="px-3 py-1 rounded text-sm transition-colors"
+          :class="
+            isDark ? 'bg-[#31363c] text-white' : 'bg-[#bac3ce] text-black'
+          "
+        >
+          {{ isDark ? "Light" : "Dark" }}
+        </button>
       </div>
+
+      <!-- Dark Mode Toggle -->
     </div>
     <div class="w-full flex justify-between items-center"></div>
 
@@ -41,20 +49,7 @@
         <div class="text-[2em]">
           {{ localTime }} <span class="text-[0.5em]">Local Time</span>
         </div>
-        <div>
-          <NuxtLink to="/">
-            <input
-              type="button"
-              class="button"
-              :class="
-                isDark
-                  ? 'bg-gradient-to-b from-[#7d818b] to-[#353a48] text-[#dddddd] border-[#9397a7] hover:from-black hover:to-[#7d818b] hover:text-white'
-                  : 'bg-gradient-to-b from-[#d5d9e6] to-[#a4a9b9] text-black border-[#9397a7] hover:from-white hover:to-[#d5d9e6] hover:text-black'
-              "
-              value="Menu"
-            />
-          </NuxtLink>
-        </div>
+        <div></div>
       </div>
       <div
         class="w-full grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-center"
@@ -209,15 +204,19 @@ export default {
   },
   setup() {
     const { isDark, toggle } = useDarkMode();
+    const toggleDarkMode = () => toggle();
+    return { isDark, toggleDarkMode };
 
-    const setLightMode = () => {
-      if (isDark.value) toggle();
-    };
-    const setDarkMode = () => {
-      if (!isDark.value) toggle();
-    };
+    // const { isDark, toggle } = useDarkMode();
 
-    return { isDark, setLightMode, setDarkMode };
+    // const setLightMode = () => {
+    //   if (isDark.value) toggle();
+    // };
+    // const setDarkMode = () => {
+    //   if (!isDark.value) toggle();
+    // };
+
+    // return { isDark, setLightMode, setDarkMode };
   },
   watch: {
     fps() {
@@ -226,6 +225,7 @@ export default {
   },
   mounted() {
     this.currentRoom = this.rooms[this.$route.params.room].slug;
+
     this.currentRoomIndex = this.rooms[this.$route.params.room].index;
 
     const ws = new WebSocket("wss://smaart.msct.dev/ws/");
@@ -336,10 +336,22 @@ export default {
       }, 1000 / this.fps);
     },
     resolveColour: function (f) {
-      if (f < 60) {
-        return "#0f0";
+      if (this.currentRoom == "EXC1") {
+        if (f <= 86.5) {
+          return "#0f0";
+        } else if (f <= 88) {
+          return "#FFBF00";
+        } else {
+          return "#f00";
+        }
       } else {
-        return "#f00";
+        if (f <= 94.5) {
+          return "#0f0";
+        } else if (f <= 96) {
+          return "#FFBF00";
+        } else {
+          return "#f00";
+        }
       }
     },
     addPoint(entry) {
