@@ -36,16 +36,12 @@
     </div>
     <div class="w-full flex justify-between items-center"></div>
 
-    <!-- Time & Menu -->
-    <table width="100%" class="mt-2">
-      <tr>
-        <td class="ping">
-          <span class="text-[2em]" type="text" size="5" readonly id="timeInput">
-            {{ localTime }}
-          </span>
-          Local Time
-        </td>
-        <td class="top">
+    <div class="w-full">
+      <div class="flex justify-between items-center p-2">
+        <div class="text-[2em]">
+          {{ localTime }} <span class="text-[0.5em]">Local Time</span>
+        </div>
+        <div>
           <NuxtLink to="/">
             <input
               type="button"
@@ -58,94 +54,56 @@
               value="Menu"
             />
           </NuxtLink>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <div id="meterArray"></div>
-        </td>
-      </tr>
-    </table>
-
-    <!-- Canvas Options -->
-    <table width="100%" class="mt-2">
-      <tr>
-        <td>
-          <table id="canvasOptions" style="width: 100%">
-            <tr>
-              <td>Input:</td>
-              <td style="min-width: 200px">
-                <select
-                  id="plotInputs"
-                  style="min-width: 200px"
-                  @change="onPlotInputChange"
-                  class="dark:text-black"
-                ></select>
-                <input type="hidden" id="lastPlotInput" value="-1" />
-              </td>
-            </tr>
-            <tr>
-              <td>Display:</td>
-              <td style="min-width: 200px">
-                <select
-                  id="plotDisplayLast"
-                  style="min-width: 200px"
-                  @change="onPlotTimeWindowChange"
-                  autocomplete="off"
-                  class="dark:text-black"
-                  v-model="max_mins"
-                >
-                  <option value="30">Last 30 minutes</option>
-                  <option value="10" selected>Last 10 minutes</option>
-                  <option value="5">Last 5 minutes</option>
-                </select>
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td>
-          <table id="canvasOptions" style="width: 100%">
-            <tr>
-              <td style="min-width: 40px">
-                <div style="background: #009b05; margin: 0">&nbsp;</div>
-              </td>
-              <td style="min-width: 200px">
-                <select
-                  id="plotMetric0"
-                  style="min-width: 200px"
-                  @change="onPlotMetricChange"
-                  class="dark:text-black"
-                ></select>
-              </td>
-            </tr>
-            <tr>
-              <td style="min-width: 40px">
-                <div style="background: #3264f5; margin: 0">&nbsp;</div>
-              </td>
-              <td style="min-width: 200px">
-                <select
-                  id="plotMetric1"
-                  style="min-width: 200px"
-                  @change="onPlotMetricChange"
-                ></select>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
+      <div
+        class="w-full flex items-center justify-between px-[10vw] mt-4 text-center"
+      >
+        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+          <div class="w-full">LAeq 1</div>
+          <div class="text-[3vw]">{{ currentValues["LAeq 1"] }}</div>
+        </div>
+        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+          <div class="w-full">LAeq 10</div>
+          <div class="text-[3vw]">{{ currentValues["LAeq 10"] }}</div>
+        </div>
+        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+          <div class="w-full">Leq 1 63 Hz</div>
+          <div class="text-[3vw]">{{ currentValues["Leq 1 63 Hz"] }}</div>
+        </div>
+        <div class="w-1/4 mx-4 h-24 border border-white rounded-lg">
+          <div class="w-full">Leq 1 125 Hz</div>
+          <div class="text-[3vw]">{{ currentValues["Leq 1 125 Hz"] }}</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Canvas Display -->
-    <div style="float: left; position: relative; width: 100%" class="mt-2">
+    <div class="mt-2">
       <div>
         <div style="height: 400px">
-          000
           <canvas ref="chartCanvas"></canvas>
         </div>
       </div>
     </div>
 
-    <footer class="mt-[42vh] text-center text-xs">
+    <div class="ml-2 my-2 flex items-center">
+      Graph Display:
+      <select
+        id="plotDisplayLast"
+        style="min-width: 200px"
+        @change="onPlotTimeWindowChange"
+        autocomplete="off"
+        class="dark:text-black ml-2"
+        v-model="max_mins"
+      >
+        <option value="30">Last 30 minutes</option>
+        <option value="10" selected>Last 10 minutes</option>
+        <option value="5">Last 5 minutes</option>
+      </select>
+    </div>
+
+    <footer class="text-center text-xs">
       &copy; Copyright 2026, Rational Acoustics LLC, All Rights Reserved -
       System Designed and Installed by Sterling Event Group Ltd
     </footer>
@@ -207,6 +165,8 @@ export default {
       recvLive: false,
 
       metricKeys: [],
+      selectedMetrics: ["LAeq 1", "Leq 1 63 Hz"],
+      currentValues: {},
     };
   },
   setup() {
@@ -228,6 +188,7 @@ export default {
     const ws = new WebSocket("wss://smaart.msct.dev/ws/");
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
+
       if (msg.type == "snapshot_end") {
         this.showGraph = true;
         this.recvLive = true;
@@ -238,9 +199,10 @@ export default {
           });
         }
         if (this.filteredStream.length) {
-          this.metricKeys = this.extractMetricKeys(
-            this.filteredStream[this.currentRoomIndex],
-          );
+          // this.metricKeys = this.extractMetricKeys(
+          //   this.filteredStream[this.currentRoomIndex],
+          // );
+          this.metricKeys = this.selectedMetrics;
         }
         this.initChart();
 
@@ -249,7 +211,7 @@ export default {
           // this.initChart();
 
           this.chart.datasets = this.buildDatasets(this.filteredStream);
-          console.log("yodate");
+
           this.chart.update("none");
         }, 1000 / 8);
       } else if (msg.type === "snapshot_chunk") {
@@ -268,6 +230,13 @@ export default {
 
         // Add point to chart and scroll
         if (this.chart) this.addPoint(entry);
+        const values = {};
+        entry.metrics.forEach((m) => {
+          const key = Object.keys(m)[0];
+          values[key] = m[key];
+        });
+
+        this.currentValues = values;
       }
 
       const MAX_MESSAGES = this.msg_per_sec * this.max_mins * 60;
