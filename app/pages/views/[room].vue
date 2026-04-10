@@ -15,7 +15,7 @@
         />
 
         <div
-          class="mcccl font-[Verdana] text-base sm:text-xl md:text-2xl lg:text-3xl leading-[5vh]"
+          class="font-[Verdana] text-lg sm:text-xl md:text-2xl lg:text-3xl leading-[5vh]"
         >
           Manchester Central - {{ resolveRoom($route.params.room) }}
         </div>
@@ -23,6 +23,16 @@
 
       <!-- RIGHT: controls -->
       <div class="flex items-center justify-end gap-2 shrink-0">
+        <NuxtLink to="/">
+          <button
+            class="px-3 py-1 rounded text-sm transition-colors"
+            :class="
+              isDark ? 'bg-[#31363c] text-white' : 'bg-[#bac3ce] text-black'
+            "
+          >
+            Menu
+          </button>
+        </NuxtLink>
         <span class="hidden sm:inline mr-2">FPS:</span>
 
         <select v-model="fps" class="border rounded p-1 dark:text-black">
@@ -36,7 +46,7 @@
             isDark ? 'bg-[#31363c] text-white' : 'bg-[#bac3ce] text-black'
           "
         >
-          {{ isDark ? "Light" : "Dark" }}
+          {{ isDark ? "Light Mode" : "Dark Mode" }}
         </button>
       </div>
 
@@ -91,7 +101,7 @@
           </div>
         </div>
         <div
-          class="w-full h-24 border boLeq 1 125 Hzrder-black dark:border-white rounded-lg"
+          class="w-full h-24 border border-black dark:border-white rounded-lg"
         >
           <div class="w-full">Leq 1 125 Hz</div>
           <div
@@ -338,7 +348,11 @@ export default {
     resolveColour: function (f) {
       if (this.currentRoom == "EXC1") {
         if (f <= 86.5) {
-          return "#0f0";
+          if (!this.isDark) {
+            return "#488e30";
+          } else {
+            return "#0f0";
+          }
         } else if (f <= 88) {
           return "#FFBF00";
         } else {
@@ -346,7 +360,11 @@ export default {
         }
       } else {
         if (f <= 94.5) {
-          return "#0f0";
+          if (!this.isDark) {
+            return "#488e30";
+          } else {
+            return "#0f0";
+          }
         } else if (f <= 96) {
           return "#FFBF00";
         } else {
@@ -492,14 +510,6 @@ body {
   width: 100px;
   text-align: center;
   vertical-align: middle;
-}
-
-.mcccl {
-  text-align: left;
-  font-size: 2.5em;
-  vertical-align: middle;
-  padding: 2px;
-  font-family: Verdana, Tahoma, sans-serif;
 }
 
 .top {
