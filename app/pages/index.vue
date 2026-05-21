@@ -32,7 +32,40 @@
       <img
         class="h-full w-auto mx-auto"
         :src="`/img/plan_${isDark ? 'dark' : 'light'}.png`"
+        usemap="#mccc-map"
       />
+      <map name="mccc-map">
+        <area
+          shape="rect"
+          coords="0, 195, 115, 384"
+          href="/views/central1"
+          alt="Central 1"
+        />
+        <area
+          shape="rect"
+          coords="115, 195, 215, 384"
+          href="/views/central2"
+          alt="Central 2"
+        />
+        <area
+          shape="rect"
+          coords="215, 195, 317, 384"
+          href="/views/central3"
+          alt="Central 3"
+        />
+        <area
+          shape="rect"
+          coords="317, 195, 420, 384"
+          href="/views/central4"
+          alt="Central 4"
+        />
+        <area
+          shape="rect"
+          coords="210, 0, 420, 175"
+          href="/views/exchange"
+          alt="Exchange"
+        />
+      </map>
     </div>
     <!-- Buttons Table -->
     <div class="lg:flex mt-5">

@@ -9,6 +9,7 @@ export const useDarkMode = () => {
   };
   if (process.client) {
     const stored = localStorage.getItem("dark-mode");
+
     if (stored !== null) {
       isDark.value = stored === "true";
     }
