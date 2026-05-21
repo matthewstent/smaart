@@ -28,11 +28,16 @@
         </td>
       </tr>
     </table>
-
+    <div class="w-full h-96">
+      <img
+        class="h-full w-auto mx-auto"
+        :src="`/img/plan_${isDark ? 'dark' : 'light'}.png`"
+      />
+    </div>
     <!-- Buttons Table -->
-    <table class="mt-8">
-      <tr v-for="(central, index) in centrals" :key="index">
-        <td class="py-4 text-center">
+    <div class="lg:flex mt-5">
+      <div class="mx-1" v-for="(central, index) in centrals" :key="index">
+        <div class="py-4 text-center">
           <NuxtLink :to="central.link">
             <button
               class="button text-lg w-[200px] h-[40px] rounded-md border transition-colors duration-500"
@@ -45,9 +50,9 @@
               {{ central.name }}
             </button>
           </NuxtLink>
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
+    </div>
 
     <footer class="mt-2 py-6 text-center text-xs">
       &copy; Copyright 2026, Rational Acoustics LLC, All Rights Reserved -

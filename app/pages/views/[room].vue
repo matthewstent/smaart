@@ -23,7 +23,7 @@
 
       <!-- RIGHT: controls -->
       <div class="flex items-center justify-end gap-2 shrink-0">
-        <NuxtLink to="/">
+        <a href="/">
           <button
             class="px-3 py-1 rounded text-sm transition-colors"
             :class="
@@ -32,7 +32,7 @@
           >
             Menu
           </button>
-        </NuxtLink>
+        </a>
         <span class="hidden sm:inline mr-2">FPS:</span>
 
         <select v-model="fps" class="border rounded p-1 dark:text-black">
