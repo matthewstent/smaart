@@ -422,13 +422,13 @@ export default {
     },
     resolveRoom: function (r) {
       if (r == "central1") {
-        return "Central 1";
+        return "Central 1 (Arches 15 - 16)";
       } else if (r == "central2") {
-        return "Central 2";
+        return "Central 2 (Arches 11 - 12)";
       } else if (r == "central3") {
-        return "Central 3";
+        return "Central 3 (Arches 7 - 8)";
       } else if (r == "central4") {
-        return "Central 4";
+        return "Central 4 (Arches 3 - 4)";
       } else if (r == "exchange") {
         return "Exchange Hall";
       } else {
