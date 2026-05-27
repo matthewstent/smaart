@@ -240,7 +240,9 @@ export default {
 
     this.currentRoomIndex = this.rooms[this.$route.params.room].index;
 
-    const ws = new WebSocket("wss://smaart.msct.dev/ws/");
+    const ws = new WebSocket(
+      "wss://audio.manchestercentral.co.uk/ws/?key=5vuxc84LCpmhermgvSyKoftpRT6tJH5n",
+    );
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
       console.log(msg);
