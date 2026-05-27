@@ -67,13 +67,13 @@
         <div
           class="w-full h-24 border border-black dark:border-white rounded-lg"
         >
-          <div class="w-full">LAeq 1</div>
+          <div class="w-full">SPL A Fast</div>
           <div
             v-if="recvLive"
             class="text-5xl"
-            :style="`color:${resolveColour(currentValues['LAeq 1'])}`"
+            :style="`color:${resolveColour(currentValues['SPL A Fast'])}`"
           >
-            {{ currentValues["LAeq 1"] }}
+            {{ currentValues["SPL A Fast"] }}
           </div>
         </div>
         <div
