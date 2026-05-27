@@ -453,27 +453,34 @@ export default {
       console.log(entry);
       return entry.metrics.map((obj) => Object.keys(obj)[0]);
     },
-
     buildDatasets(data) {
       const colors = ["#3357FF", "#a533ff"];
 
+      // Remove blank/invalid entries
+      const validData = data.filter(
+        (entry) => entry && Array.isArray(entry.metrics) && entry.timestamp,
+      );
+
       return this.metricKeys.map((key, index) => {
-        const color = colors[index % colors.length]; // rotate colors if more keys than colors
+        const color = colors[index % colors.length];
 
         return {
           label: key,
-          data: data.map((entry) => {
+
+          data: validData.map((entry) => {
             const metricObj = entry.metrics.find((m) => m[key] !== undefined);
+
             return {
               x: new Date(entry.timestamp),
               y: metricObj ? metricObj[key] : null,
             };
           }),
+
           borderWidth: 1,
           tension: 0.2,
           pointRadius: 0,
           backgroundColor: color,
-          borderColor: color, // <-- force visible color
+          borderColor: color,
         };
       });
     },
