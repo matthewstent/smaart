@@ -457,8 +457,6 @@ export default {
     buildDatasets(data) {
       const colors = ["#3357FF", "#a533ff"];
 
-      // console.log("building data");
-
       return this.metricKeys.map((key, index) => {
         const color = colors[index % colors.length]; // rotate colors if more keys than colors
 
